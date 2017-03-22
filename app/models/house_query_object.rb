@@ -336,33 +336,46 @@ class HouseQueryObject
   def self.parties(id)
     "PREFIX parl: <http://id.ukpds.org/schema/>
      CONSTRUCT {
-        ?house
+       ?house
         	a parl:House ;
         	parl:houseName ?houseName .
         ?party
           a parl:Party ;
           parl:partyName ?partyName .
       }
-          WHERE {
-        	  BIND(<#{DATA_URI_PREFIX}/#{id}> AS ?house)
+      WHERE {
+        BIND(<#{DATA_URI_PREFIX}/#{id}> as ?house)
 
-            ?house a parl:House ;
-                   parl:houseName ?houseName .
-            ?person a parl:Member .
-        	  ?incumbency parl:incumbencyHasMember ?person .
-    		    ?person parl:partyMemberHasPartyMembership ?partyMembership .
-    		    ?partyMembership parl:partyMembershipHasParty ?party .
-    		    ?party parl:partyName ?partyName .
+        ?house a parl:House ;
+               parl:houseName ?houseName .
+        ?person a parl:Member .
+        ?incumbency parl:incumbencyHasMember ?person ;
+                    parl:incumbencyStartDate ?incStartDate .
+        OPTIONAL { ?incumbency parl:incumbencyEndDate ?incumbencyEndDate . }
 
-    			  {
-    			      ?incumbency parl:houseIncumbencyHasHouse ?house .
-    			  }
+        {
+            ?incumbency parl:houseIncumbencyHasHouse ?house .
+        }
+        UNION
+        {
+            ?incumbency parl:seatIncumbencyHasHouseSeat ?houseSeat .
+            ?houseSeat parl:houseSeatHasHouse ?house .
+        }
 
-    		    UNION {
-            		?incumbency parl:seatIncumbencyHasHouseSeat ?seat .
-            		?seat parl:houseSeatHasHouse ?house .
-    		    }
-         }"
+        ?partyMembership parl:partyMembershipHasPartyMember ?person ;
+            			parl:partyMembershipHasParty ?party ;
+            			parl:partyMembershipStartDate ?pmStartDate .
+        OPTIONAL { ?partyMembership parl:partyMembershipEndDate ?partyMembershipEndDate . }
+        ?party parl:partyName ?partyName.
+
+        BIND(COALESCE(?partyMembershipEndDate,now()) AS ?pmEndDate)
+        BIND(COALESCE(?incumbencyEndDate,now()) AS ?incEndDate)
+
+        FILTER (
+            (?pmStartDate<=?incStartDate && ?pmEndDate>?incStartDate) ||
+            (?pmStartDate>=?incStartDate && ?pmStartDate<?incEndDate)
+        )
+      }"
   end
 
   def self.current_parties(id)

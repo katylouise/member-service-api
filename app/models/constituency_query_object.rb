@@ -142,13 +142,15 @@ class ConstituencyQueryObject
           ?constituencyGroup a parl:ConstituencyGroup .
           FILTER NOT EXISTS { ?constituencyGroup a parl:PastConstituencyGroup . }
           OPTIONAL { ?constituencyGroup parl:constituencyGroupName ?name . }
-    	    ?constituencyGroup parl:constituencyGroupHasHouseSeat ?seat .
-    	    ?seat parl:houseSeatHasSeatIncumbency ?seatIncumbency .
-    	    FILTER NOT EXISTS { ?seatIncumbency a parl:PastIncumbency . }
-    	    ?seatIncumbency parl:incumbencyHasMember ?member .
-    	    OPTIONAL { ?member parl:personGivenName ?givenName . }
-          OPTIONAL { ?member parl:personFamilyName ?familyName . }
-          OPTIONAL { ?member <http://example.com/F31CBD81AD8343898B49DC65743F0BDF> ?displayAs } .
+          OPTIONAL {
+    	      ?constituencyGroup parl:constituencyGroupHasHouseSeat ?seat .
+    	      ?seat parl:houseSeatHasSeatIncumbency ?seatIncumbency .
+    	      FILTER NOT EXISTS { ?seatIncumbency a parl:PastIncumbency . }
+    	      ?seatIncumbency parl:incumbencyHasMember ?member .
+    	      OPTIONAL { ?member parl:personGivenName ?givenName . }
+            OPTIONAL { ?member parl:personFamilyName ?familyName . }
+            OPTIONAL { ?member <http://example.com/F31CBD81AD8343898B49DC65743F0BDF> ?displayAs } .
+          }
       }'
   end
 
@@ -175,13 +177,15 @@ class ConstituencyQueryObject
           ?constituencyGroup a parl:ConstituencyGroup .
           FILTER NOT EXISTS { ?constituencyGroup a parl:PastConstituencyGroup . }
           OPTIONAL { ?constituencyGroup parl:constituencyGroupName ?name . }
-    	    ?constituencyGroup parl:constituencyGroupHasHouseSeat ?seat .
-    	    ?seat parl:houseSeatHasSeatIncumbency ?seatIncumbency .
-    	    FILTER NOT EXISTS { ?seatIncumbency a parl:PastIncumbency . }
-    	    ?seatIncumbency parl:incumbencyHasMember ?member .
-    	    OPTIONAL { ?member parl:personGivenName ?givenName . }
-          OPTIONAL { ?member parl:personFamilyName ?familyName . }
-          OPTIONAL { ?member <http://example.com/F31CBD81AD8343898B49DC65743F0BDF> ?displayAs } .
+          OPTIONAL {
+    	      ?constituencyGroup parl:constituencyGroupHasHouseSeat ?seat .
+    	      ?seat parl:houseSeatHasSeatIncumbency ?seatIncumbency .
+    	      FILTER NOT EXISTS { ?seatIncumbency a parl:PastIncumbency . }
+    	      ?seatIncumbency parl:incumbencyHasMember ?member .
+    	      OPTIONAL { ?member parl:personGivenName ?givenName . }
+            OPTIONAL { ?member parl:personFamilyName ?familyName . }
+            OPTIONAL { ?member <http://example.com/F31CBD81AD8343898B49DC65743F0BDF> ?displayAs } .
+           }
 
     		  FILTER regex(str(?name), \"^#{letter}\", 'i') .
       }"

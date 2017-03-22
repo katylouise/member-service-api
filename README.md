@@ -45,6 +45,19 @@ make dev
 
 `make dev` runs the application and attaches the current directory into the docker container. This means updates you make to the views and contollers will be automatically reflected.
 
+## Making Requests
+A request can be made to the triple store by passing the query to the response_streamer.  For example,
+```
+response_streamer(query)
+```
+
+Multiple requests can be made in the controller and they will be returned as one response.    For example,
+```
+response_streamer(query_one)
+response_streamer(query_two)
+```
+
+The response streamer will append the subsequent response to the first, creating a single response.
 
 ## Contributing
 If you wish to submit a bug fix or feature, you can create a pull request and it will be merged pending a code review.
