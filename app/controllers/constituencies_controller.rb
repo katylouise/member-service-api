@@ -1,9 +1,7 @@
 class ConstituenciesController < ApplicationController
   def index
     query = ConstituencyQueryObject.all
-    letter_query = ConstituencyQueryObject.a_z_letters
     response_streamer(query)
-    response_streamer(letter_query)
   end
 
   def lookup

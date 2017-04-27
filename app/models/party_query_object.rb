@@ -7,13 +7,26 @@ class PartyQueryObject
         ?party
            a parl:Party ;
            parl:partyName ?partyName .
+    	_:x parl:value ?firstLetter .
       }
       WHERE {
-	      ?party
-          a parl:Party ;
-          parl:partyHasPartyMembership ?partyMembership ;
-          parl:partyName ?partyName .
-      }'
+    	  { SELECT * WHERE {
+              ?party
+            		a parl:Party ;
+            		parl:partyHasPartyMembership ?partyMembership ;
+            		parl:partyName ?partyName .
+          	}
+    	  }
+    	  UNION {
+        	SELECT DISTINCT ?firstLetter WHERE {
+	        	?s a parl:Party ;
+            	parl:partyHasPartyMembership ?partyMembership ;
+            	parl:partyName ?partyName .
+
+          	BIND(ucase(SUBSTR(?partyName, 1, 1)) as ?firstLetter)
+          }
+    	  }
+     }'
   end
 
   def self.lookup(source, id)
@@ -49,6 +62,7 @@ class PartyQueryObject
       }'
   end
 
+  # Not used - can go
   def self.a_z_letters_current
     'PREFIX parl: <http://id.ukpds.org/schema/>
      CONSTRUCT {
@@ -75,16 +89,31 @@ class PartyQueryObject
         ?party
            a parl:Party ;
            parl:partyName ?partyName .
+    	_:x parl:value ?firstLetter .
       }
       WHERE {
-        ?party a parl:Party ;
-              parl:partyHasPartyMembership ?partyMembership ;
-              parl:partyName ?partyName .
+    	  { SELECT * WHERE {
+              ?party
+            		a parl:Party ;
+            		parl:partyHasPartyMembership ?partyMembership ;
+            		parl:partyName ?partyName .
 
-        FILTER regex(str(?partyName), \"^#{letter}\", 'i') .
-      }"
+              FILTER regex(str(?partyName), \"^#{letter}\", 'i') .
+          	}
+    	  }
+    	  UNION {
+        	SELECT DISTINCT ?firstLetter WHERE {
+	        	?s a parl:Party ;
+            	parl:partyHasPartyMembership ?partyMembership ;
+            	parl:partyName ?partyName .
+
+          	BIND(ucase(SUBSTR(?partyName, 1, 1)) as ?firstLetter)
+          }
+    	  }
+     }"
   end
 
+  # This will go.
   def self.a_z_letters_all
     'PREFIX parl: <http://id.ukpds.org/schema/>
      CONSTRUCT {
