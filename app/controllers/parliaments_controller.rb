@@ -4,6 +4,21 @@ class ParliamentsController < ApplicationController
     response_streamer(query)
   end
 
+  def current
+    query = ParliamentQueryObject.current
+    response_streamer(query)
+  end
+
+  def previous
+    query = ParliamentQueryObject.previous
+    response_streamer(query)
+  end
+
+  def next
+    query = ParliamentQueryObject.next
+    response_streamer(query)
+  end
+
   def show
     id = params[:id]
     query = ParliamentQueryObject.find(id)

@@ -37,6 +37,10 @@ Rails.application.routes.draw do
   get '/houses/lookup', to: 'houses#lookup'
   get '/houses/:letters', to: 'houses#lookup_by_letters'
 
+  get '/parliaments/current', to: 'parliaments#current'
+  get '/parliaments/previous', to: 'parliaments#previous'
+  get '/parliaments/next', to: 'parliaments#next'
+
   match '/parliaments/:parliament', to: 'parliaments#show', parliament: /\w{8}/, via: [:get]
 
   resources :people, only: [:index] do
