@@ -40,6 +40,7 @@ Rails.application.routes.draw do
   get '/parliaments/current', to: 'parliaments#current'
   get '/parliaments/previous', to: 'parliaments#previous'
   get '/parliaments/next', to: 'parliaments#next'
+  get '/parliaments/lookup', to: 'parliaments#lookup'
 
   match '/parliaments/:parliament', to: 'parliaments#show', parliament: /\w{8}/, via: [:get]
 

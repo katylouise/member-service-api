@@ -79,8 +79,64 @@ WHERE {
 }'
   end
 
-  def self.find(id)
+  def self.lookup(source, id)
+    "PREFIX : <http://id.ukpds.org/schema/>
+CONSTRUCT {
+    ?parliament a :ParliamentPeriod .
+}
+WHERE {
+    BIND(\"#{id}\" AS ?id)
+    BIND(:#{source} AS ?source)
+    ?parliament
+        a :ParliamentPeriod ;
+        ?source ?id .
+}"
+  end
 
+  def self.find(id)
+    "PREFIX : <http://id.ukpds.org/schema/>
+CONSTRUCT {
+    ?parliament
+        a :ParliamentPeriod ;
+        :parliamentPeriodStartDate ?startDate ;
+        :parliamentPeriodEndDate ?endDate ;
+        :parliamentPeriodNumber ?parliamentNumber .
+    ?party
+        a :Party ;
+        :partyName ?partyName ;
+        :count ?memberCount .
+}
+WHERE {
+    SELECT ?parliament ?startDate ?endDate ?parliamentNumber ?party ?partyName (COUNT(?member) AS ?memberCount)
+    WHERE {
+        BIND(<#{DATA_URI_PREFIX}/#{id}> AS ?parliament)
+        ?parliament
+            a :ParliamentPeriod ;
+            :parliamentPeriodStartDate ?startDate ;
+            :parliamentPeriodNumber ?parliamentNumber .
+            OPTIONAL { ?parliament :parliamentPeriodEndDate ?endDate . }
+
+        OPTIONAL {
+            ?parliament :parliamentPeriodHasSeatIncumbency ?seatIncumbency .
+            ?seatIncumbency :incumbencyStartDate ?incStartDate ;
+           					:incumbencyHasMember ?member .
+            OPTIONAL { ?seatIncumbency :incumbencyEndDate ?incumbencyEndDate . }
+            ?member :partyMemberHasPartyMembership ?partyMembership .
+            ?partyMembership :partyMembershipHasParty ?party ;
+                             :partyMembershipStartDate ?pmStartDate .
+            OPTIONAL { ?partyMembership :partyMembershipEndDate ?partyMembershipEndDate . }
+            ?party :partyName ?partyName .
+
+            BIND(COALESCE(?partyMembershipEndDate,now()) AS ?pmEndDate)
+    		BIND(COALESCE(?incumbencyEndDate,now()) AS ?incEndDate)
+            FILTER (
+                (?pmStartDate <= ?incStartDate && ?pmEndDate > ?incStartDate) ||
+                (?pmStartDate >= ?incStartDate && ?pmStartDate < ?incEndDate)
+            )
+        }
+    }
+	GROUP BY ?parliament ?startDate ?endDate ?parliamentNumber ?party ?partyName
+}"
   end
 
   def self.members(id)

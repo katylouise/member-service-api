@@ -19,8 +19,15 @@ class ParliamentsController < ApplicationController
     response_streamer(query)
   end
 
+  def lookup
+    source = params['source']
+    id = params['id']
+    query = ParliamentQueryObject.lookup(source, id)
+    response_streamer(query)
+  end
+
   def show
-    id = params[:id]
+    id = params[:parliament]
     query = ParliamentQueryObject.find(id)
     response_streamer(query)
   end
