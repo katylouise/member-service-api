@@ -37,6 +37,8 @@ Rails.application.routes.draw do
   get '/houses/lookup', to: 'houses#lookup'
   get '/houses/:letters', to: 'houses#lookup_by_letters'
 
+  match '/parliaments/:parliament', to: 'parliaments#show', parliament: /\w{8}/, via: [:get]
+
   resources :people, only: [:index] do
     get '/constituencies', to: 'people#constituencies'
     get '/constituencies/current', to: 'people#current_constituency'
@@ -80,5 +82,9 @@ Rails.application.routes.draw do
     get '/parties/:party_id/members/current', to: 'houses#current_party_members'
     match '/parties/:party_id/members/current/:letter', to: 'houses#current_party_members_letters', letter: /[A-Za-z]/, via: [:get]
     get 'parties/:party_id/members/current/a_z_letters', to: 'houses#a_z_letters_party_members_current'
+  end
+
+  resources :parliaments, only: [:index] do
+    get '/members', to: 'parliaments#members'
   end
 end
