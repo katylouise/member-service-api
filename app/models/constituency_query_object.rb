@@ -2,62 +2,129 @@ class ConstituencyQueryObject
   extend QueryObject
 
   def self.all
-    'PREFIX parl: <http://id.ukpds.org/schema/>
-     CONSTRUCT{
-         ?constituencyGroup
-            a parl:ConstituencyGroup ;
-            parl:constituencyGroupName ?name ;
-            parl:constituencyGroupEndDate ?endDate .
-    	    _:x parl:value ?firstLetter .
+    'PREFIX : <http://id.ukpds.org/schema/>
+CONSTRUCT {
+    ?constituencyGroup
+        a :ConstituencyGroup ;
+        :constituencyGroupName ?name ;
+        :constituencyGroupEndDate ?endDate ;
+        :constituencyGroupHasHouseSeat ?seat .
+    ?seat
+        a :HouseSeat ;
+        :houseSeatHasSeatIncumbency ?seatIncumbency .
+    ?seatIncumbency
+        a :SeatIncumbency ;
+        :incumbencyHasMember ?member ;
+        :incumbencyHasEndDate ?seatIncumbencyEndDate .
+    ?member
+        a :Person;
+        :personGivenName ?givenName ;
+        :personFamilyName ?familyName ;
+        <http://example.com/F31CBD81AD8343898B49DC65743F0BDF> ?displayAs ;
+        :partyMemberHasPartyMembership ?partyMembership .
+    ?partyMembership
+        a :PartyMembership ;
+        :partyMembershipHasParty ?party .
+    ?party
+        a :Party ;
+        :partyName ?partyName .
+    _:x
+        :value ?firstLetter .
       }
-	    WHERE {
-	      { SELECT * WHERE {
-      	  ?constituencyGroup a parl:ConstituencyGroup .
-          OPTIONAL { ?constituencyGroup parl:constituencyGroupName ?name . }
-          OPTIONAL { ?constituencyGroup parl:constituencyGroupEndDate ?endDate . }
-      	}
-	    }
-	    UNION {
-		    SELECT DISTINCT ?firstLetter WHERE {
-	        ?s a parl:ConstituencyGroup .
-          ?s parl:constituencyGroupName ?constituencyName .
-
-          BIND(ucase(SUBSTR(?constituencyName, 1, 1)) as ?firstLetter)
+    WHERE {
+    	{ SELECT * WHERE {
+            ?constituencyGroup a :ConstituencyGroup ;
+                                :constituencyGroupName ?name .
+            OPTIONAL { ?constituencyGroup :constituencyGroupEndDate ?endDate . }
+            OPTIONAL {
+                ?constituencyGroup :constituencyGroupHasHouseSeat ?seat .
+                ?seat :houseSeatHasSeatIncumbency ?seatIncumbency .
+                OPTIONAL { ?seatIncumbency :incumbencyHasEndDate ?seatIncumbencyEndDate . }
+                FILTER NOT EXISTS {?seatIncumbency a :PastIncumbency . }
+                ?seatIncumbency :incumbencyHasMember ?member .
+                OPTIONAL { ?member :personGivenName ?givenName . }
+                OPTIONAL { ?member :personFamilyName ?familyName . }
+                OPTIONAL { ?member <http://example.com/F31CBD81AD8343898B49DC65743F0BDF> ?displayAs } .
+                ?member :partyMemberHasPartyMembership ?partyMembership .
+                ?partyMembership :partyMembershipHasParty ?party .
+                ?party :partyName ?partyName .
+           }
         }
+    }
+    UNION {
+		    SELECT DISTINCT ?firstLetter WHERE {
+	            ?s a :ConstituencyGroup ;
+                    :constituencyGroupName ?constituencyName .
+
+                BIND(ucase(SUBSTR(?constituencyName, 1, 1)) as ?firstLetter)
+            }
 	    }
-    }'
+   }'
   end
 
   def self.all_by_letter(letter)
-    "PREFIX parl: <http://id.ukpds.org/schema/>
-     CONSTRUCT{
-         ?constituencyGroup
-            a parl:ConstituencyGroup ;
-            parl:constituencyGroupName ?name ;
-            parl:constituencyGroupEndDate ?endDate .
-    	    _:x parl:value ?firstLetter .
-      }
-	    WHERE {
-	      { SELECT * WHERE {
-      	  ?constituencyGroup a parl:ConstituencyGroup .
-          OPTIONAL { ?constituencyGroup parl:constituencyGroupName ?name . }
-          OPTIONAL { ?constituencyGroup parl:constituencyGroupEndDate ?endDate . }
+    "PREFIX : <http://id.ukpds.org/schema/>
+PREFIX parl: <http://id.ukpds.org/schema/>
+CONSTRUCT{
+    ?constituencyGroup
+        a :ConstituencyGroup ;
+        :constituencyGroupName ?name ;
+        :constituencyGroupEndDate ?endDate ;
+        :constituencyGroupHasHouseSeat ?seat .
+    ?seat
+        a :HouseSeat ;
+        :houseSeatHasSeatIncumbency ?seatIncumbency .
+    ?seatIncumbency
+        a :SeatIncumbency ;
+        :incumbencyHasMember ?member ;
+        :incumbencyHasEndDate ?seatIncumbencyEndDate .
+    ?member
+        a :Person;
+        :personGivenName ?givenName ;
+        :personFamilyName ?familyName ;
+        <http://example.com/F31CBD81AD8343898B49DC65743F0BDF> ?displayAs ;
+        :partyMemberHasPartyMembership ?partyMembership .
+    ?partyMembership
+        a :PartyMembership ;
+        :partyMembershipHasParty ?party .
+    ?party
+        a :Party ;
+        :partyName ?partyName .
+    _:x :value ?firstLetter .
 
-          FILTER regex(str(?name), \"^#{letter}\", 'i') .
-      	}
-	    }
-	    UNION {
-		    SELECT DISTINCT ?firstLetter WHERE {
-	        ?s a parl:ConstituencyGroup .
-          ?s parl:constituencyGroupName ?constituencyName .
-
-          BIND(ucase(SUBSTR(?constituencyName, 1, 1)) as ?firstLetter)
+}
+WHERE {
+    { SELECT * WHERE {
+        ?constituencyGroup a :ConstituencyGroup .
+        OPTIONAL { ?constituencyGroup :constituencyGroupName ?name . }
+        OPTIONAL { ?constituencyGroup :constituencyGroupEndDate ?endDate . }
+        OPTIONAL {
+            ?constituencyGroup :constituencyGroupHasHouseSeat ?seat .
+            ?seat :houseSeatHasSeatIncumbency ?seatIncumbency .
+            OPTIONAL { ?seatIncumbency :incumbencyHasEndDate ?seatIncumbencyEndDate . }
+            FILTER NOT EXISTS {?seatIncumbency a :PastIncumbency . }
+            ?seatIncumbency :incumbencyHasMember ?member .
+            OPTIONAL { ?member :personGivenName ?givenName . }
+            OPTIONAL { ?member :personFamilyName ?familyName . }
+            OPTIONAL { ?member <http://example.com/F31CBD81AD8343898B49DC65743F0BDF> ?displayAs } .
+            ?member :partyMemberHasPartyMembership ?partyMembership .
+            ?partyMembership :partyMembershipHasParty ?party .
+            ?party :partyName ?partyName .
         }
-	    }
-    }"
+        FILTER STRSTARTS(LCASE(?name), LCASE(\"#{letter}\"))
+       }
+    }
+    UNION {
+		SELECT DISTINCT ?firstLetter WHERE {
+	        ?s a :ConstituencyGroup ;
+          		:constituencyGroupName ?constituencyName .
+
+          	BIND(ucase(SUBSTR(?constituencyName, 1, 1)) as ?firstLetter)
+        }
+	}
+}"
   end
 
-  # This will go.
   def self.a_z_letters
     'PREFIX parl: <http://id.ukpds.org/schema/>
      CONSTRUCT {
@@ -144,103 +211,124 @@ class ConstituencyQueryObject
   end
 
   def self.all_current
-    'PREFIX parl: <http://id.ukpds.org/schema/>
-     CONSTRUCT{
-          ?constituencyGroup
-              a parl:ConstituencyGroup ;
-              parl:constituencyGroupName ?name ;
-        	    parl:constituencyGroupHasHouseSeat ?seat .
-    	  ?seat
-        	a parl:HouseSeat ;
-        	parl:houseSeatHasSeatIncumbency ?seatIncumbency .
-    	  ?seatIncumbency
-        	a parl:SeatIncumbency ;
-        	parl:incumbencyHasMember ?member .
-    	  ?member
-        	a parl:Person ;
-        	parl:personGivenName ?givenName ;
-        	parl:personFamilyName ?familyName ;
-          <http://example.com/F31CBD81AD8343898B49DC65743F0BDF> ?displayAs .
-    	  _:x parl:value ?firstLetter .
-      }
-      WHERE {
-    	{SELECT * WHERE {
-          ?constituencyGroup a parl:ConstituencyGroup .
-          FILTER NOT EXISTS { ?constituencyGroup a parl:PastConstituencyGroup . }
-          OPTIONAL { ?constituencyGroup parl:constituencyGroupName ?name . }
-          OPTIONAL {
-    	      ?constituencyGroup parl:constituencyGroupHasHouseSeat ?seat .
-    	      ?seat parl:houseSeatHasSeatIncumbency ?seatIncumbency .
-    	      FILTER NOT EXISTS { ?seatIncumbency a parl:PastIncumbency . }
-    	      ?seatIncumbency parl:incumbencyHasMember ?member .
-    	      OPTIONAL { ?member parl:personGivenName ?givenName . }
-            OPTIONAL { ?member parl:personFamilyName ?familyName . }
+    'PREFIX : <http://id.ukpds.org/schema/>
+PREFIX parl: <http://id.ukpds.org/schema/>
+CONSTRUCT{
+    ?constituencyGroup
+        a :ConstituencyGroup ;
+        :constituencyGroupName ?name ;
+        :constituencyGroupHasHouseSeat ?seat .
+    ?seat
+        a :HouseSeat ;
+        :houseSeatHasSeatIncumbency ?seatIncumbency .
+    ?seatIncumbency
+        a :SeatIncumbency ;
+        :incumbencyHasMember ?member .
+    ?member
+        a :Person ;
+        :personGivenName ?givenName ;
+        :personFamilyName ?familyName ;
+        <http://example.com/F31CBD81AD8343898B49DC65743F0BDF> ?displayAs ;
+        :partyMemberHasPartyMembership ?partyMembership .
+     ?partyMembership
+         a :PartyMembership ;
+           :partyMembershipHasParty ?party .
+     ?party
+         a :Party ;
+           :partyName ?partyName .
+    _:x :value ?firstLetter .
+}
+WHERE {
+    { SELECT * WHERE {
+        ?constituencyGroup a :ConstituencyGroup .
+        FILTER NOT EXISTS { ?constituencyGroup a :PastConstituencyGroup . }
+        OPTIONAL { ?constituencyGroup :constituencyGroupName ?name . }
+        OPTIONAL {
+            ?constituencyGroup :constituencyGroupHasHouseSeat ?seat .
+            ?seat :houseSeatHasSeatIncumbency ?seatIncumbency .
+            FILTER NOT EXISTS { ?seatIncumbency a :PastIncumbency . }
+            ?seatIncumbency :incumbencyHasMember ?member .
+            OPTIONAL { ?member :personGivenName ?givenName . }
+            OPTIONAL { ?member :personFamilyName ?familyName . }
             OPTIONAL { ?member <http://example.com/F31CBD81AD8343898B49DC65743F0BDF> ?displayAs } .
-          }
-    	}
+            ?member :partyMemberHasPartyMembership ?partyMembership .
+            ?partyMembership :partyMembershipHasParty ?party .
+            ?party :partyName ?partyName .
+        }
       }
-      UNION {
+    }
+    UNION {
           SELECT DISTINCT ?firstLetter WHERE {
-	        ?s a parl:ConstituencyGroup .
-          	FILTER NOT EXISTS { ?s a parl:PastConstituencyGroup . }
-          	?s parl:constituencyGroupName ?constituencyName .
+	        ?s a :ConstituencyGroup .
+          	FILTER NOT EXISTS { ?s a :PastConstituencyGroup . }
+          	?s :constituencyGroupName ?constituencyName .
 
           	BIND(ucase(SUBSTR(?constituencyName, 1, 1)) as ?firstLetter)
         }
       }
-    }'
+
+}'
   end
 
   def self.all_current_by_letter(letter)
-    "PREFIX parl: <http://id.ukpds.org/schema/>
-        CONSTRUCT{
-          ?constituencyGroup
-          a parl:ConstituencyGroup ;
-          parl:constituencyGroupName ?name ;
-          parl:constituencyGroupHasHouseSeat ?seat .
-          ?seat
-          a parl:HouseSeat ;
-          parl:houseSeatHasSeatIncumbency ?seatIncumbency .
-          ?seatIncumbency
-          a parl:SeatIncumbency ;
-          parl:incumbencyHasMember ?member .
-          ?member
-          a parl:Person ;
-          parl:personGivenName ?givenName ;
-          parl:personFamilyName ?familyName ;
-          <http://example.com/F31CBD81AD8343898B49DC65743F0BDF> ?displayAs .
-              _:x parl:value ?firstLetter .
-        }
-    WHERE {
-      {SELECT * WHERE {
-          ?constituencyGroup a parl:ConstituencyGroup .
-          FILTER NOT EXISTS { ?constituencyGroup a parl:PastConstituencyGroup . }
-          OPTIONAL { ?constituencyGroup parl:constituencyGroupName ?name . }
-          OPTIONAL {
-            ?constituencyGroup parl:constituencyGroupHasHouseSeat ?seat .
-            ?seat parl:houseSeatHasSeatIncumbency ?seatIncumbency .
-                FILTER NOT EXISTS { ?seatIncumbency a parl:PastIncumbency . }
-            ?seatIncumbency parl:incumbencyHasMember ?member .
-                OPTIONAL { ?member parl:personGivenName ?givenName . }
-            OPTIONAL { ?member parl:personFamilyName ?familyName . }
+    "PREFIX : <http://id.ukpds.org/schema/>
+CONSTRUCT{
+    ?constituencyGroup
+        a :ConstituencyGroup ;
+        :constituencyGroupName ?name ;
+        :constituencyGroupHasHouseSeat ?seat .
+    ?seat
+        a :HouseSeat ;
+        :houseSeatHasSeatIncumbency ?seatIncumbency .
+    ?seatIncumbency
+        a :SeatIncumbency ;
+        :incumbencyHasMember ?member .
+    ?member
+        a :Person ;
+        :personGivenName ?givenName ;
+        :personFamilyName ?familyName ;
+        <http://example.com/F31CBD81AD8343898B49DC65743F0BDF> ?displayAs ;
+        :partyMemberHasPartyMembership ?partyMembership .
+     ?partyMembership
+         a :PartyMembership ;
+           :partyMembershipHasParty ?party .
+     ?party
+         a :Party ;
+           :partyName ?partyName .
+    _:x :value ?firstLetter .
+}
+WHERE {
+    { SELECT * WHERE {
+        ?constituencyGroup a :ConstituencyGroup .
+        FILTER NOT EXISTS { ?constituencyGroup a :PastConstituencyGroup . }
+        OPTIONAL { ?constituencyGroup :constituencyGroupName ?name . }
+        OPTIONAL {
+            ?constituencyGroup :constituencyGroupHasHouseSeat ?seat .
+            ?seat :houseSeatHasSeatIncumbency ?seatIncumbency .
+            FILTER NOT EXISTS { ?seatIncumbency a :PastIncumbency . }
+            ?seatIncumbency :incumbencyHasMember ?member .
+            OPTIONAL { ?member :personGivenName ?givenName . }
+            OPTIONAL { ?member :personFamilyName ?familyName . }
             OPTIONAL { ?member <http://example.com/F31CBD81AD8343898B49DC65743F0BDF> ?displayAs } .
-          }
-          FILTER regex(str(?name), \"^#{letter}\", 'i') .
+            ?member :partyMemberHasPartyMembership ?partyMembership .
+            ?partyMembership :partyMembershipHasParty ?party .
+            ?party :partyName ?partyName .
         }
+        FILTER STRSTARTS(LCASE(?name), LCASE(\"#{letter}\"))
       }
-      UNION {
+    }
+    UNION {
         SELECT DISTINCT ?firstLetter WHERE {
-          ?s a parl:ConstituencyGroup .
-              FILTER NOT EXISTS { ?s a parl:PastConstituencyGroup . }
-          ?s parl:constituencyGroupName ?constituencyName .
+          ?s a :ConstituencyGroup .
+              FILTER NOT EXISTS { ?s a :PastConstituencyGroup . }
+          ?s :constituencyGroupName ?constituencyName .
 
-              BIND(ucase(SUBSTR(?constituencyName, 1, 1)) as ?firstLetter)
+          BIND(ucase(SUBSTR(?constituencyName, 1, 1)) as ?firstLetter)
         }
       }
-    }"
+}"
   end
 
-  # This will go.
   def self.a_z_letters_current
     'PREFIX parl: <http://id.ukpds.org/schema/>
      CONSTRUCT {
