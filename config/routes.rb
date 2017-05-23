@@ -91,5 +91,7 @@ Rails.application.routes.draw do
 
   resources :parliaments, only: [:index] do
     get '/members', to: 'parliaments#members'
+    get '/next_parliament', to: 'parliaments#next_parliament'
+    get '/previous_parliament', to: 'parliaments#previous_parliament'
   end
 end

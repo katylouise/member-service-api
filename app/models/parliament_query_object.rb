@@ -139,6 +139,32 @@ WHERE {
 }"
   end
 
+  def self.next_parliament(id)
+    "PREFIX : <http://id.ukpds.org/schema/>
+CONSTRUCT {
+    ?nextParliament
+        a :ParliamentPeriod .
+}
+WHERE {
+    BIND(<#{DATA_URI_PREFIX}/#{id}> AS ?parliament)
+
+    ?parliament :parliamentPeriodHasImmediatelyFollowingParliamentPeriod ?nextParliament .
+}"
+  end
+
+  def self.previous_parliament(id)
+    "PREFIX : <http://id.ukpds.org/schema/>
+CONSTRUCT {
+    ?previousParliament
+        a :ParliamentPeriod .
+}
+WHERE {
+    BIND(<#{DATA_URI_PREFIX}/#{id}> AS ?parliament)
+
+    ?parliament :parliamentPeriodHasImmediatelyPreviousParliamentPeriod ?previousParliament .
+}"
+  end
+
   def self.members(id)
 
   end
