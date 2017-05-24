@@ -101,6 +101,8 @@ Rails.application.routes.draw do
     match '/members/houses/:house_id/:letter', to: 'parliaments#members_house_letters', letter: /[A-Za-z]/, via: [:get]
     get '/parties', to: 'parliaments#parties'
     get '/parties/:party_id', to: 'parliaments#party'
-
+    get '/parties/:party_id/members', to: 'parliaments#party_members'
+    get '/parties/:party_id/members/a_z_letters', to: 'parliaments#a_z_letters_party_members'
+    match '/parties/:party_id/members/:letter', to: 'parliaments#party_members_letters', letter: /[A-Za-z]/, via: [:get]
   end
 end
