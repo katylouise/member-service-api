@@ -100,14 +100,16 @@ CONSTRUCT {
         a :ParliamentPeriod ;
         :parliamentPeriodStartDate ?startDate ;
         :parliamentPeriodEndDate ?endDate ;
-        :parliamentPeriodNumber ?parliamentNumber .
+        :parliamentPeriodNumber ?parliamentNumber ;
+        :parliamentPeriodHasImmediatelyFollowingParliamentPeriod ?nextParliament ;
+    	:parliamentPeriodHasImmediatelyPreviousParliamentPeriod ?previousParliament .
     ?party
         a :Party ;
         :partyName ?partyName ;
         :count ?memberCount .
 }
 WHERE {
-    SELECT ?parliament ?startDate ?endDate ?parliamentNumber ?party ?partyName (COUNT(?member) AS ?memberCount)
+    SELECT ?parliament ?startDate ?endDate ?parliamentNumber ?party ?partyName ?nextParliament ?previousParliament (COUNT(?member) AS ?memberCount)
     WHERE {
         BIND(<#{DATA_URI_PREFIX}/#{id}> AS ?parliament)
         ?parliament
@@ -115,6 +117,8 @@ WHERE {
             :parliamentPeriodStartDate ?startDate ;
             :parliamentPeriodNumber ?parliamentNumber .
             OPTIONAL { ?parliament :parliamentPeriodEndDate ?endDate . }
+        	OPTIONAL { ?parliament :parliamentPeriodHasImmediatelyFollowingParliamentPeriod ?nextParliament . }
+            OPTIONAL { ?parliament :parliamentPeriodHasImmediatelyPreviousParliamentPeriod ?previousParliament . }
 
         OPTIONAL {
             ?parliament :parliamentPeriodHasSeatIncumbency ?seatIncumbency .
@@ -135,7 +139,7 @@ WHERE {
             )
         }
     }
-	GROUP BY ?parliament ?startDate ?endDate ?parliamentNumber ?party ?partyName
+	GROUP BY ?parliament ?startDate ?endDate ?parliamentNumber ?party ?partyName ?nextParliament ?previousParliament
 }"
   end
 
@@ -198,7 +202,9 @@ CONSTRUCT {
          a :ParliamentPeriod ;
          :parliamentPeriodStartDate ?parliamentStartDate ;
          :parliamentPeriodEndDate ?parliamentEndDate ;
-         :parliamentPeriodNumber ?parliamentNumber .
+         :parliamentPeriodNumber ?parliamentNumber ;
+         :parliamentPeriodHasImmediatelyFollowingParliamentPeriod ?nextParliament ;
+    	   :parliamentPeriodHasImmediatelyPreviousParliamentPeriod ?previousParliament .
     ?house
         a :House ;
         :houseName ?houseName .
@@ -212,6 +218,8 @@ WHERE {
             :parliamentPeriodStartDate ?parliamentStartDate ;
             :parliamentPeriodNumber ?parliamentNumber .
         OPTIONAL { ?parliament :parliamentPeriodEndDate ?parliamentEndDate . }
+        OPTIONAL { ?parliament :parliamentPeriodHasImmediatelyFollowingParliamentPeriod ?nextParliament . }
+        OPTIONAL { ?parliament :parliamentPeriodHasImmediatelyPreviousParliamentPeriod ?previousParliament . }
 
         OPTIONAL {
             ?parliament :parliamentPeriodHasSeatIncumbency ?seatIncumbency .
@@ -291,7 +299,9 @@ CONSTRUCT {
          a :ParliamentPeriod ;
          :parliamentPeriodStartDate ?parliamentStartDate ;
          :parliamentPeriodEndDate ?parliamentEndDate ;
-         :parliamentPeriodNumber ?parliamentNumber .
+         :parliamentPeriodNumber ?parliamentNumber ;
+         :parliamentPeriodHasImmediatelyFollowingParliamentPeriod ?nextParliament ;
+    	   :parliamentPeriodHasImmediatelyPreviousParliamentPeriod ?previousParliament .
     ?house
         a :House ;
         :houseName ?houseName .
@@ -305,6 +315,8 @@ WHERE {
             :parliamentPeriodStartDate ?parliamentStartDate ;
             :parliamentPeriodNumber ?parliamentNumber .
         OPTIONAL { ?parliament :parliamentPeriodEndDate ?parliamentEndDate . }
+        OPTIONAL { ?parliament :parliamentPeriodHasImmediatelyFollowingParliamentPeriod ?nextParliament . }
+        OPTIONAL { ?parliament :parliamentPeriodHasImmediatelyPreviousParliamentPeriod ?previousParliament . }
 
         OPTIONAL {
             ?parliament :parliamentPeriodHasSeatIncumbency ?seatIncumbency .
@@ -380,7 +392,9 @@ CONSTRUCT {
          a :ParliamentPeriod ;
          :parliamentPeriodStartDate ?parliamentStartDate ;
          :parliamentPeriodEndDate ?parliamentEndDate ;
-         :parliamentPeriodNumber ?parliamentNumber .
+         :parliamentPeriodNumber ?parliamentNumber ;
+         :parliamentPeriodHasImmediatelyFollowingParliamentPeriod ?nextParliament ;
+    	   :parliamentPeriodHasImmediatelyPreviousParliamentPeriod ?previousParliament .
 }
 WHERE {
     BIND(<#{DATA_URI_PREFIX}/#{id}> AS ?parliament)
@@ -389,6 +403,8 @@ WHERE {
         :parliamentPeriodStartDate ?parliamentStartDate ;
         :parliamentPeriodNumber ?parliamentNumber .
     OPTIONAL { ?parliament :parliamentPeriodEndDate ?parliamentEndDate . }
+    OPTIONAL { ?parliament :parliamentPeriodHasImmediatelyFollowingParliamentPeriod ?nextParliament . }
+    OPTIONAL { ?parliament :parliamentPeriodHasImmediatelyPreviousParliamentPeriod ?previousParliament . }
 
     OPTIONAL {
         ?parliament :parliamentPeriodHasSeatIncumbency ?seatIncumbency .
@@ -433,7 +449,9 @@ CONSTRUCT {
          a :ParliamentPeriod ;
          :parliamentPeriodStartDate ?parliamentStartDate ;
          :parliamentPeriodEndDate ?parliamentEndDate ;
-         :parliamentPeriodNumber ?parliamentNumber .
+         :parliamentPeriodNumber ?parliamentNumber ;
+         :parliamentPeriodHasImmediatelyFollowingParliamentPeriod ?nextParliament ;
+    	   :parliamentPeriodHasImmediatelyPreviousParliamentPeriod ?previousParliament .
     ?house
         a :House ;
         :houseName ?houseName .
@@ -451,6 +469,8 @@ WHERE {
             a :House ;
             :houseName ?houseName .
         OPTIONAL { ?parliament :parliamentPeriodEndDate ?parliamentEndDate . }
+        OPTIONAL { ?parliament :parliamentPeriodHasImmediatelyFollowingParliamentPeriod ?nextParliament . }
+        OPTIONAL { ?parliament :parliamentPeriodHasImmediatelyPreviousParliamentPeriod ?previousParliament . }
 
         OPTIONAL {
             ?parliament :parliamentPeriodHasSeatIncumbency ?seatIncumbency .
@@ -555,7 +575,9 @@ CONSTRUCT {
          a :ParliamentPeriod ;
          :parliamentPeriodStartDate ?parliamentStartDate ;
          :parliamentPeriodEndDate ?parliamentEndDate ;
-         :parliamentPeriodNumber ?parliamentNumber .
+         :parliamentPeriodNumber ?parliamentNumber ;
+         :parliamentPeriodHasImmediatelyFollowingParliamentPeriod ?nextParliament ;
+    	   :parliamentPeriodHasImmediatelyPreviousParliamentPeriod ?previousParliament .
     ?house
         a :House ;
         :houseName ?houseName .
@@ -573,6 +595,8 @@ WHERE {
             a :House ;
             :houseName ?houseName .
         OPTIONAL { ?parliament :parliamentPeriodEndDate ?parliamentEndDate . }
+        OPTIONAL { ?parliament :parliamentPeriodHasImmediatelyFollowingParliamentPeriod ?nextParliament . }
+        OPTIONAL { ?parliament :parliamentPeriodHasImmediatelyPreviousParliamentPeriod ?previousParliament . }
 
         OPTIONAL {
             ?parliament :parliamentPeriodHasSeatIncumbency ?seatIncumbency .
