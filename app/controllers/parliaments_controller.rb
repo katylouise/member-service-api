@@ -90,4 +90,17 @@ class ParliamentsController < ApplicationController
     query = ParliamentQueryObject.members_house_letters(parliament_id, house_id, letter)
     response_streamer(query)
   end
+
+  def parties
+    id = params[:parliament_id]
+    query = ParliamentQueryObject.parties(id)
+    response_streamer(query)
+  end
+
+  def party
+    parliament_id = params[:parliament_id]
+    party_id = params[:party_id]
+    query = ParliamentQueryObject.party(parliament_id, party_id)
+    response_streamer(query)
+  end
 end

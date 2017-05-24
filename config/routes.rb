@@ -99,5 +99,8 @@ Rails.application.routes.draw do
     get '/members/houses/:house_id', to: 'parliaments#members_house'
     get '/members/houses/:house_id/a_z_letters', to: 'parliaments#a_z_letters_members_house'
     match '/members/houses/:house_id/:letter', to: 'parliaments#members_house_letters', letter: /[A-Za-z]/, via: [:get]
+    get '/parties', to: 'parliaments#parties'
+    get '/parties/:party_id', to: 'parliaments#party'
+
   end
 end

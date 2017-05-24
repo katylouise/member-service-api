@@ -646,4 +646,101 @@ WHERE {
       }
 }"
   end
+
+  def self.parties(id)
+    "PREFIX : <http://id.ukpds.org/schema/>
+CONSTRUCT {
+    ?parliament
+        a :ParliamentPeriod ;
+        :parliamentPeriodStartDate ?startDate ;
+        :parliamentPeriodEndDate ?endDate ;
+        :parliamentPeriodNumber ?parliamentNumber ;
+        :parliamentPeriodHasImmediatelyFollowingParliamentPeriod ?nextParliament ;
+    	:parliamentPeriodHasImmediatelyPreviousParliamentPeriod ?previousParliament .
+    ?party
+        a :Party ;
+        :partyName ?partyName ;
+        :count ?memberCount .
+}
+WHERE {
+    SELECT ?parliament ?startDate ?endDate ?parliamentNumber ?party ?partyName ?nextParliament ?previousParliament (COUNT(?member) AS ?memberCount)
+    WHERE {
+        BIND(<#{DATA_URI_PREFIX}/#{id}> AS ?parliament)
+        ?parliament
+            a :ParliamentPeriod ;
+            :parliamentPeriodStartDate ?startDate ;
+            :parliamentPeriodNumber ?parliamentNumber .
+        OPTIONAL { ?parliament :parliamentPeriodEndDate ?endDate . }
+        OPTIONAL { ?parliament :parliamentPeriodHasImmediatelyFollowingParliamentPeriod ?nextParliament . }
+        OPTIONAL { ?parliament :parliamentPeriodHasImmediatelyPreviousParliamentPeriod ?previousParliament . }
+        OPTIONAL {
+            ?parliament :parliamentPeriodHasSeatIncumbency ?seatIncumbency .
+            ?seatIncumbency :incumbencyHasMember ?member ;
+                            :incumbencyStartDate ?incStartDate .
+            OPTIONAL { ?seatIncumbency :incumbencyEndDate ?seatIncumbencyEndDate . }
+            ?member :partyMemberHasPartyMembership ?partyMembership .
+            ?partyMembership :partyMembershipHasParty ?party ;
+        				     :partyMembershipStartDate ?pmStartDate .
+            OPTIONAL { ?partyMembership :partyMembershipEndDate ?partyMembershipEndDate . }
+            ?party :partyName ?partyName .
+
+            BIND(COALESCE(?partyMembershipEndDate,now()) AS ?pmEndDate)
+            BIND(COALESCE(?seatIncumbencyEndDate,now()) AS ?incEndDate)
+            FILTER (
+        	    (?pmStartDate <= ?incStartDate && ?pmEndDate > ?incStartDate) ||
+        	    (?pmStartDate >= ?incStartDate && ?pmStartDate < ?incEndDate)
+		    )
+        }
+    }
+    GROUP BY ?parliament ?startDate ?endDate ?parliamentNumber ?party ?partyName ?nextParliament ?previousParliament
+}"
+  end
+
+  def self.party(parliament_id, party_id)
+    "PREFIX : <http://id.ukpds.org/schema/>
+CONSTRUCT {
+    ?parliament
+        a :ParliamentPeriod ;
+        :parliamentPeriodStartDate ?startDate ;
+        :parliamentPeriodEndDate ?endDate ;
+        :parliamentPeriodNumber ?parliamentNumber .
+    ?party
+        a :Party ;
+        :partyName ?partyName ;
+        :count ?memberCount .
+}
+WHERE {
+    SELECT ?parliament ?startDate ?endDate ?parliamentNumber ?party ?partyName (COUNT(?member) AS ?memberCount)
+    WHERE {
+            BIND(<#{DATA_URI_PREFIX}/#{parliament_id}> AS ?parliament)
+            BIND(<#{DATA_URI_PREFIX}/#{party_id}> AS ?party)
+	?party
+         a :Party ;
+         :partyName ?partyName .
+    ?parliament
+        a :ParliamentPeriod ;
+        :parliamentPeriodStartDate ?startDate ;
+        :parliamentPeriodNumber ?parliamentNumber .
+    OPTIONAL { ?parliament :parliamentPeriodEndDate ?endDate . }
+    OPTIONAL {
+        ?parliament :parliamentPeriodHasSeatIncumbency ?seatIncumbency .
+        ?seatIncumbency :incumbencyHasMember ?member ;
+                        :incumbencyStartDate ?incStartDate .
+        OPTIONAL { ?seatIncumbency :incumbencyEndDate ?seatIncumbencyEndDate . }
+        ?member :partyMemberHasPartyMembership ?partyMembership .
+        ?partyMembership :partyMembershipHasParty ?party ;
+        				 :partyMembershipStartDate ?pmStartDate .
+        OPTIONAL { ?partyMembership :partyMembershipEndDate ?partyMembershipEndDate . }
+
+        BIND(COALESCE(?partyMembershipEndDate,now()) AS ?pmEndDate)
+        BIND(COALESCE(?seatIncumbencyEndDate,now()) AS ?incEndDate)
+        FILTER (
+        	(?pmStartDate <= ?incStartDate && ?pmEndDate > ?incStartDate) ||
+        	(?pmStartDate >= ?incStartDate && ?pmStartDate < ?incEndDate)
+		)
+    }
+    }
+    GROUP BY ?parliament ?startDate ?endDate ?parliamentNumber ?party ?partyName
+}"
+  end
 end
