@@ -90,8 +90,10 @@ Rails.application.routes.draw do
   end
 
   resources :parliaments, only: [:index] do
-    get '/members', to: 'parliaments#members'
     get '/next_parliament', to: 'parliaments#next_parliament'
     get '/previous_parliament', to: 'parliaments#previous_parliament'
+    get '/members', to: 'parliaments#members'
+    match '/members/:letter', to: 'parliaments#members_letters', letter: /[A-Za-z]/, via: [:get]
+    get '/members/a_z_letters', to: 'parliaments#a_z_letters_members'
   end
 end

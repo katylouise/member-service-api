@@ -166,6 +166,185 @@ WHERE {
   end
 
   def self.members(id)
+    "PREFIX : <http://id.ukpds.org/schema/>
+CONSTRUCT {
+    ?person
+        a :Person ;
+        :personGivenName ?givenName ;
+        :personFamilyName ?familyName ;
+        <http://example.com/F31CBD81AD8343898B49DC65743F0BDF> ?displayAs ;
+        <http://example.com/A5EE13ABE03C4D3A8F1A274F57097B6C> ?listAs ;
+        :memberHasIncumbency ?seatIncumbency ;
+        :partyMemberHasPartyMembership ?partyMembership .
+   ?seatIncumbency
+        a :SeatIncumbency ;
+        :seatIncumbencyHasHouseSeat ?houseSeat ;
+        :incumbencyEndDate ?seatIncumbencyEndDate .
+    ?houseSeat
+        a :HouseSeat ;
+        :houseSeatHasHouse ?house ;
+        :houseSeatHasConstituencyGroup ?constituencyGroup .
+   ?constituencyGroup
+        a :ConstituencyGroup;
+        :constituencyGroupName ?constituencyName .
+    ?partyMembership
+        a :PartyMembership ;
+        :partyMembershipHasParty ?party ;
+        :partyMembershipEndDate ?partyMembershipEndDate .
+    ?party
+        a :Party ;
+        :partyName ?partyName .
+     ?parliament
+         a :ParliamentPeriod ;
+         :parliamentPeriodStartDate ?parliamentStartDate ;
+         :parliamentPeriodEndDate ?parliamentEndDate ;
+         :parliamentPeriodNumber ?parliamentNumber .
+    _:x :value ?firstLetter .
+}
+WHERE {
+    { SELECT * WHERE {
+        BIND(<#{DATA_URI_PREFIX}/#{id}> AS ?parliament)
+        ?parliament
+            a :ParliamentPeriod ;
+            :parliamentPeriodStartDate ?parliamentStartDate ;
+            :parliamentPeriodNumber ?parliamentNumber .
+        OPTIONAL { ?parliament :parliamentPeriodEndDate ?parliamentEndDate . }
 
+        OPTIONAL {
+            ?parliament :parliamentPeriodHasSeatIncumbency ?seatIncumbency .
+            ?seatIncumbency :incumbencyHasMember ?person ;
+                            :seatIncumbencyHasHouseSeat ?houseSeat .
+            OPTIONAL { ?seatIncumbency :incumbencyEndDate ?seatIncumbencyEndDate . }
+            ?houseSeat :houseSeatHasConstituencyGroup ?constituencyGroup .
+            ?constituencyGroup :constituencyGroupName ?constituencyName .
+
+            OPTIONAL { ?person :personGivenName ?givenName . }
+            OPTIONAL { ?person :personFamilyName ?familyName . }
+            OPTIONAL { ?person <http://example.com/F31CBD81AD8343898B49DC65743F0BDF> ?displayAs } .
+            ?person <http://example.com/A5EE13ABE03C4D3A8F1A274F57097B6C> ?listAs .
+
+            OPTIONAL {
+                ?person :partyMemberHasPartyMembership ?partyMembership .
+                FILTER NOT EXISTS { ?partyMembership a :PastPartyMembership . }
+                OPTIONAL { ?partyMembership :partyMembershipEndDate ?partyMembershipEndDate . }
+                ?partyMembership :partyMembershipHasParty ?party .
+                ?party :partyName ?partyName .
+        	}
+        }
+    }
+}
+UNION {
+    SELECT DISTINCT ?firstLetter WHERE {
+        BIND(<#{DATA_URI_PREFIX}/#{id}> AS ?parliament)
+
+        ?parliament a :ParliamentPeriod ;
+        			:parliamentPeriodHasSeatIncumbency ?seatIncumbency .
+        ?seatIncumbency :incumbencyHasMember ?person .
+        ?person <http://example.com/A5EE13ABE03C4D3A8F1A274F57097B6C> ?listAs .
+        BIND(ucase(SUBSTR(?listAs, 1, 1)) as ?firstLetter)
+    }
+   }
+}"
+  end
+
+  def self.members_letters(id, letter)
+    "PREFIX : <http://id.ukpds.org/schema/>
+CONSTRUCT {
+    ?person
+        a :Person ;
+        :personGivenName ?givenName ;
+        :personFamilyName ?familyName ;
+        <http://example.com/F31CBD81AD8343898B49DC65743F0BDF> ?displayAs ;
+        <http://example.com/A5EE13ABE03C4D3A8F1A274F57097B6C> ?listAs ;
+        :memberHasIncumbency ?seatIncumbency ;
+        :partyMemberHasPartyMembership ?partyMembership .
+   ?seatIncumbency
+        a :SeatIncumbency ;
+        :seatIncumbencyHasHouseSeat ?houseSeat ;
+        :incumbencyEndDate ?seatIncumbencyEndDate .
+    ?houseSeat
+        a :HouseSeat ;
+        :houseSeatHasHouse ?house ;
+        :houseSeatHasConstituencyGroup ?constituencyGroup .
+   ?constituencyGroup
+        a :ConstituencyGroup;
+        :constituencyGroupName ?constituencyName .
+    ?partyMembership
+        a :PartyMembership ;
+        :partyMembershipHasParty ?party ;
+        :partyMembershipEndDate ?partyMembershipEndDate .
+    ?party
+        a :Party ;
+        :partyName ?partyName .
+     ?parliament
+         a :ParliamentPeriod ;
+         :parliamentPeriodStartDate ?parliamentStartDate ;
+         :parliamentPeriodEndDate ?parliamentEndDate ;
+         :parliamentPeriodNumber ?parliamentNumber .
+    _:x :value ?firstLetter .
+}
+WHERE {
+    { SELECT * WHERE {
+        BIND(<#{DATA_URI_PREFIX}/#{id}> AS ?parliament)
+        ?parliament
+            a :ParliamentPeriod ;
+            :parliamentPeriodStartDate ?parliamentStartDate ;
+            :parliamentPeriodNumber ?parliamentNumber .
+        OPTIONAL { ?parliament :parliamentPeriodEndDate ?parliamentEndDate . }
+
+        OPTIONAL {
+            ?parliament :parliamentPeriodHasSeatIncumbency ?seatIncumbency .
+            ?seatIncumbency :incumbencyHasMember ?person ;
+                            :seatIncumbencyHasHouseSeat ?houseSeat .
+            OPTIONAL { ?seatIncumbency :incumbencyEndDate ?seatIncumbencyEndDate . }
+            ?houseSeat :houseSeatHasConstituencyGroup ?constituencyGroup .
+            ?constituencyGroup :constituencyGroupName ?constituencyName .
+
+            OPTIONAL { ?person :personGivenName ?givenName . }
+            OPTIONAL { ?person :personFamilyName ?familyName . }
+            OPTIONAL { ?person <http://example.com/F31CBD81AD8343898B49DC65743F0BDF> ?displayAs } .
+            ?person <http://example.com/A5EE13ABE03C4D3A8F1A274F57097B6C> ?listAs .
+
+            OPTIONAL {
+                ?person :partyMemberHasPartyMembership ?partyMembership .
+                FILTER NOT EXISTS { ?partyMembership a :PastPartyMembership . }
+                OPTIONAL { ?partyMembership :partyMembershipEndDate ?partyMembershipEndDate . }
+                ?partyMembership :partyMembershipHasParty ?party .
+                ?party :partyName ?partyName .
+        	}
+        FILTER STRSTARTS(LCASE(?listAs), LCASE(\"#{letter}\"))
+        }
+    }
+}
+UNION {
+    SELECT DISTINCT ?firstLetter WHERE {
+        BIND(<#{DATA_URI_PREFIX}/#{id}> AS ?parliament)
+
+        ?parliament a :ParliamentPeriod ;
+        			:parliamentPeriodHasSeatIncumbency ?seatIncumbency .
+        ?seatIncumbency :incumbencyHasMember ?person .
+        ?person <http://example.com/A5EE13ABE03C4D3A8F1A274F57097B6C> ?listAs .
+        BIND(ucase(SUBSTR(?listAs, 1, 1)) as ?firstLetter)
+    }
+  }
+}"
+  end
+
+  def self.members_a_z_letters(id)
+    "PREFIX : <http://id.ukpds.org/schema/>
+CONSTRUCT {
+    _:x :value ?firstLetter .
+}
+WHERE {
+    SELECT DISTINCT ?firstLetter WHERE {
+        BIND(<#{DATA_URI_PREFIX}/#{id}> AS ?parliament)
+
+        ?parliament a :ParliamentPeriod ;
+        			:parliamentPeriodHasSeatIncumbency ?seatIncumbency .
+        ?seatIncumbency :incumbencyHasMember ?person .
+        ?person <http://example.com/A5EE13ABE03C4D3A8F1A274F57097B6C> ?listAs .
+        BIND(ucase(SUBSTR(?listAs, 1, 1)) as ?firstLetter)
+    }
+}"
   end
 end
