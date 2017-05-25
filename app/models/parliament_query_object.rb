@@ -625,8 +625,8 @@ WHERE {
                 (?pmStartDate <= ?incStartDate && ?pmEndDate > ?incStartDate) ||
                 (?pmStartDate >= ?incStartDate && ?pmStartDate < ?incEndDate)
             )
+            FILTER STRSTARTS(LCASE(?listAs), LCASE(\"#{letter}\"))
           }
-         FILTER STRSTARTS(LCASE(?listAs), LCASE(\"#{letter}\"))
        }
     }
     UNION {
