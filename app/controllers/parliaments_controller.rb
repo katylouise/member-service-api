@@ -165,4 +165,23 @@ class ParliamentsController < ApplicationController
     query = ParliamentQueryObject.party_house_members_letters(parliament_id, party_id, house_id, letter)
     response_streamer(query)
   end
+
+  def constituencies
+    parliament_id = params[:parliament_id]
+    query = ParliamentQueryObject.constituencies(parliament_id)
+    response_streamer(query)
+  end
+
+  def a_z_letters_constituencies
+    parliament_id = params[:parliament_id]
+    query = ParliamentQueryObject.constituencies_a_z_letters(parliament_id)
+    response_streamer(query)
+  end
+
+  def constituencies_letters
+    parliament_id = params[:parliament_id]
+    letter = params[:letter]
+    query = ParliamentQueryObject.constituencies_letters(parliament_id, letter)
+    response_streamer(query)
+  end
 end
