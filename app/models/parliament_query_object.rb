@@ -1183,13 +1183,13 @@ WHERE {
          	:partyName ?partyName .
         ?parliament
             a :ParliamentPeriod ;
-            :parliamentPeriodStartDate ?startDate ;
+            :parliamentPeriodStartDate ?parliamentStartDate ;
             :parliamentPeriodNumber ?parliamentNumber .
     	?house
         	a :House ;
          	:houseName ?houseName .
 
-        OPTIONAL { ?parliament :parliamentPeriodEndDate ?endDate . }
+        OPTIONAL { ?parliament :parliamentPeriodEndDate ?parliamentEndDate . }
         OPTIONAL { ?parliament :parliamentPeriodHasImmediatelyFollowingParliamentPeriod ?nextParliament . }
    	    OPTIONAL { ?parliament :parliamentPeriodHasImmediatelyPreviousParliamentPeriod ?previousParliament . }
 
@@ -1344,12 +1344,12 @@ WHERE {
          	:partyName ?partyName .
         ?parliament
             a :ParliamentPeriod ;
-            :parliamentPeriodStartDate ?startDate ;
+            :parliamentPeriodStartDate ?parliamentStartDate ;
             :parliamentPeriodNumber ?parliamentNumber .
     	?house
         	a :House ;
          	:houseName ?houseName .
-        OPTIONAL { ?parliament :parliamentPeriodEndDate ?endDate . }
+        OPTIONAL { ?parliament :parliamentPeriodEndDate ?parliamentEndDate . }
         OPTIONAL { ?parliament :parliamentPeriodHasImmediatelyFollowingParliamentPeriod ?nextParliament . }
    	    OPTIONAL { ?parliament :parliamentPeriodHasImmediatelyPreviousParliamentPeriod ?previousParliament . }
 
