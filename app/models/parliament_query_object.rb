@@ -704,47 +704,47 @@ CONSTRUCT {
         :parliamentPeriodStartDate ?startDate ;
         :parliamentPeriodEndDate ?endDate ;
         :parliamentPeriodNumber ?parliamentNumber ;
-         :parliamentPeriodHasImmediatelyFollowingParliamentPeriod ?nextParliament ;
-    	   :parliamentPeriodHasImmediatelyPreviousParliamentPeriod ?previousParliament .
+        :parliamentPeriodHasImmediatelyFollowingParliamentPeriod ?nextParliament ;
+    	:parliamentPeriodHasImmediatelyPreviousParliamentPeriod ?previousParliament .
     ?party
         a :Party ;
         :partyName ?partyName ;
         :count ?memberCount .
 }
 WHERE {
-    SELECT ?parliament ?startDate ?endDate ?parliamentNumber ?party ?partyName (COUNT(?member) AS ?memberCount)
+    SELECT ?parliament ?startDate ?endDate ?parliamentNumber ?party ?partyName ?nextParliament ?previousParliament (COUNT(?member) AS ?memberCount)
     WHERE {
-            BIND(<#{DATA_URI_PREFIX}/#{parliament_id}> AS ?parliament)
+        BIND(<#{DATA_URI_PREFIX}/#{parliament_id}> AS ?parliament)
+        ?parliament
+            a :ParliamentPeriod ;
+            :parliamentPeriodStartDate ?startDate ;
+            :parliamentPeriodNumber ?parliamentNumber .
+        OPTIONAL { ?parliament :parliamentPeriodEndDate ?endDate . }
+        OPTIONAL { ?parliament :parliamentPeriodHasImmediatelyFollowingParliamentPeriod ?nextParliament . }
+        OPTIONAL { ?parliament :parliamentPeriodHasImmediatelyPreviousParliamentPeriod ?previousParliament . }
+        OPTIONAL {
             BIND(<#{DATA_URI_PREFIX}/#{party_id}> AS ?party)
-	?party
-         a :Party ;
-         :partyName ?partyName .
-    ?parliament
-        a :ParliamentPeriod ;
-        :parliamentPeriodStartDate ?startDate ;
-        :parliamentPeriodNumber ?parliamentNumber .
-    OPTIONAL { ?parliament :parliamentPeriodEndDate ?endDate . }
-    OPTIONAL { ?parliament :parliamentPeriodHasImmediatelyFollowingParliamentPeriod ?nextParliament . }
-   	OPTIONAL { ?parliament :parliamentPeriodHasImmediatelyPreviousParliamentPeriod ?previousParliament . }
-    OPTIONAL {
-        ?parliament :parliamentPeriodHasSeatIncumbency ?seatIncumbency .
-        ?seatIncumbency :incumbencyHasMember ?member ;
-                        :incumbencyStartDate ?incStartDate .
-        OPTIONAL { ?seatIncumbency :incumbencyEndDate ?seatIncumbencyEndDate . }
-        ?member :partyMemberHasPartyMembership ?partyMembership .
-        ?partyMembership :partyMembershipHasParty ?party ;
-        				 :partyMembershipStartDate ?pmStartDate .
-        OPTIONAL { ?partyMembership :partyMembershipEndDate ?partyMembershipEndDate . }
+            ?party
+                 a :Party ;
+                 :partyName ?partyName .
+            ?parliament :parliamentPeriodHasSeatIncumbency ?seatIncumbency .
+            ?seatIncumbency :incumbencyHasMember ?member ;
+                            :incumbencyStartDate ?incStartDate .
+            OPTIONAL { ?seatIncumbency :incumbencyEndDate ?seatIncumbencyEndDate . }
+            ?member :partyMemberHasPartyMembership ?partyMembership .
+            ?partyMembership :partyMembershipHasParty ?party ;
+                             :partyMembershipStartDate ?pmStartDate .
+            OPTIONAL { ?partyMembership :partyMembershipEndDate ?partyMembershipEndDate . }
 
-        BIND(COALESCE(?partyMembershipEndDate,now()) AS ?pmEndDate)
-        BIND(COALESCE(?seatIncumbencyEndDate,now()) AS ?incEndDate)
-        FILTER (
-        	(?pmStartDate <= ?incStartDate && ?pmEndDate > ?incStartDate) ||
-        	(?pmStartDate >= ?incStartDate && ?pmStartDate < ?incEndDate)
-		)
+            BIND(COALESCE(?partyMembershipEndDate,now()) AS ?pmEndDate)
+            BIND(COALESCE(?seatIncumbencyEndDate,now()) AS ?incEndDate)
+            FILTER (
+                (?pmStartDate <= ?incStartDate && ?pmEndDate > ?incStartDate) ||
+                (?pmStartDate >= ?incStartDate && ?pmStartDate < ?incEndDate)
+            )
+        }
     }
-    }
-    GROUP BY ?parliament ?startDate ?endDate ?parliamentNumber ?party ?partyName
+    GROUP BY ?parliament ?startDate ?endDate ?parliamentNumber ?party ?partyName ?nextParliament ?previousParliament
 }"
   end
 
@@ -983,9 +983,8 @@ WHERE {
         	(?pmStartDate <= ?incStartDate && ?pmEndDate > ?incStartDate) ||
         	(?pmStartDate >= ?incStartDate && ?pmStartDate < ?incEndDate)
 		)
-    }
     FILTER STRSTARTS(LCASE(?listAs), LCASE(\"#{letter}\"))
-
+    }
    }
   }
     UNION {
@@ -1093,7 +1092,6 @@ CONSTRUCT {
 WHERE {
         BIND(<#{DATA_URI_PREFIX}/#{parliament_id}> AS ?parliament)
         BIND(<#{DATA_URI_PREFIX}/#{party_id}> AS ?party)
-        BIND(<#{DATA_URI_PREFIX}/#{house_id}> AS ?house)
 
     	?party
         	a :Party ;
@@ -1102,14 +1100,17 @@ WHERE {
             a :ParliamentPeriod ;
             :parliamentPeriodStartDate ?startDate ;
             :parliamentPeriodNumber ?parliamentNumber .
-    	?house
-        	a :House ;
-         	:houseName ?houseName .
+
         OPTIONAL { ?parliament :parliamentPeriodEndDate ?endDate . }
         OPTIONAL { ?parliament :parliamentPeriodHasImmediatelyFollowingParliamentPeriod ?nextParliament . }
    	    OPTIONAL { ?parliament :parliamentPeriodHasImmediatelyPreviousParliamentPeriod ?previousParliament . }
 
     OPTIONAL {
+        BIND(<#{DATA_URI_PREFIX}/#{house_id}> AS ?house)
+
+        ?house
+            a :House ;
+            :houseName ?houseName .
         ?parliament :parliamentPeriodHasSeatIncumbency ?seatIncumbency .
         ?seatIncumbency :incumbencyHasMember ?member ;
                         :incumbencyStartDate ?incStartDate ;
@@ -1377,8 +1378,9 @@ WHERE {
         OPTIONAL { ?person :personFamilyName ?familyName . }
         OPTIONAL { ?person <http://example.com/F31CBD81AD8343898B49DC65743F0BDF> ?displayAs } .
         ?person <http://example.com/A5EE13ABE03C4D3A8F1A274F57097B6C> ?listAs .
+
+        FILTER STRSTARTS(LCASE(?listAs), LCASE(\"#{letter}\"))
     }
-    FILTER STRSTARTS(LCASE(?listAs), LCASE(\"#{letter}\"))
    }
   }
     UNION {
@@ -1463,11 +1465,12 @@ WHERE {
             OPTIONAL { ?seatIncumbency :incumbencyEndDate ?incEndDate . }
             ?houseSeat :houseSeatHasConstituencyGroup ?constituencyGroup .
             ?constituencyGroup :constituencyGroupName ?constituencyGroupName .
+
+            OPTIONAL { ?person :personGivenName ?givenName . }
+            OPTIONAL { ?person :personFamilyName ?familyName . }
+            OPTIONAL { ?person <http://example.com/F31CBD81AD8343898B49DC65743F0BDF> ?displayAs } .
+            ?person <http://example.com/A5EE13ABE03C4D3A8F1A274F57097B6C> ?listAs .
         }
-        OPTIONAL { ?person :personGivenName ?givenName . }
-        OPTIONAL { ?person :personFamilyName ?familyName . }
-        OPTIONAL { ?person <http://example.com/F31CBD81AD8343898B49DC65743F0BDF> ?displayAs } .
-        ?person <http://example.com/A5EE13ABE03C4D3A8F1A274F57097B6C> ?listAs .
       }
     }
     UNION {
@@ -1498,13 +1501,12 @@ WHERE {
          SELECT DISTINCT ?firstLetter WHERE {
           BIND(<#{DATA_URI_PREFIX}/#{id}> AS ?parliament)
 
-          ?parliament a :ParliamentPeriod .
-          OPTIONAL {
-            ?parliament :parliamentPeriodHasSeatIncumbency ?seatIncumbency .
+          ?parliament a :ParliamentPeriod ;
+                      :parliamentPeriodHasSeatIncumbency ?seatIncumbency .
             ?seatIncumbency :seatIncumbencyHasHouseSeat ?houseSeat .
             ?houseSeat :houseSeatHasConstituencyGroup ?constituencyGroup .
             ?constituencyGroup :constituencyGroupName ?constituencyGroupName .
-        	}
+
           BIND(ucase(SUBSTR(?constituencyGroupName, 1, 1)) as ?firstLetter)
         }
 }
@@ -1559,25 +1561,25 @@ WHERE {
             OPTIONAL { ?seatIncumbency :incumbencyEndDate ?incEndDate . }
             ?houseSeat :houseSeatHasConstituencyGroup ?constituencyGroup .
             ?constituencyGroup :constituencyGroupName ?constituencyGroupName .
+
+            OPTIONAL { ?person :personGivenName ?givenName . }
+            OPTIONAL { ?person :personFamilyName ?familyName . }
+            OPTIONAL { ?person <http://example.com/F31CBD81AD8343898B49DC65743F0BDF> ?displayAs } .
+            ?person <http://example.com/A5EE13ABE03C4D3A8F1A274F57097B6C> ?listAs .
+            FILTER STRSTARTS(LCASE(?constituencyGroupName), LCASE(\"#{letter}\"))
         }
-        OPTIONAL { ?person :personGivenName ?givenName . }
-        OPTIONAL { ?person :personFamilyName ?familyName . }
-        OPTIONAL { ?person <http://example.com/F31CBD81AD8343898B49DC65743F0BDF> ?displayAs } .
-        ?person <http://example.com/A5EE13ABE03C4D3A8F1A274F57097B6C> ?listAs .
-        FILTER STRSTARTS(LCASE(?constituencyGroupName), LCASE(\"#{letter}\"))
       }
     }
     UNION {
       SELECT DISTINCT ?firstLetter WHERE {
           BIND(<#{DATA_URI_PREFIX}/#{id}> AS ?parliament)
 
-          ?parliament a :ParliamentPeriod .
-          OPTIONAL {
-            ?parliament :parliamentPeriodHasSeatIncumbency ?seatIncumbency .
-            ?seatIncumbency :seatIncumbencyHasHouseSeat ?houseSeat .
-            ?houseSeat :houseSeatHasConstituencyGroup ?constituencyGroup .
-            ?constituencyGroup :constituencyGroupName ?constituencyGroupName .
-        	}
+          ?parliament a :ParliamentPeriod ;
+                      :parliamentPeriodHasSeatIncumbency ?seatIncumbency .
+           ?seatIncumbency :seatIncumbencyHasHouseSeat ?houseSeat .
+           ?houseSeat :houseSeatHasConstituencyGroup ?constituencyGroup .
+           ?constituencyGroup :constituencyGroupName ?constituencyGroupName .
+
           BIND(ucase(SUBSTR(?constituencyGroupName, 1, 1)) as ?firstLetter)
         }
     }
