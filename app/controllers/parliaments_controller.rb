@@ -63,31 +63,38 @@ class ParliamentsController < ApplicationController
     response_streamer(query)
   end
 
-  def members_houses
+  def houses
     id = params[:parliament_id]
-    query = ParliamentQueryObject.members_houses(id)
+    query = ParliamentQueryObject.houses(id)
     response_streamer(query)
   end
 
-  def members_house
+  def house
     parliament_id = params[:parliament_id]
     house_id = params[:house_id]
-    query = ParliamentQueryObject.members_house(parliament_id, house_id)
+    query = ParliamentQueryObject.house(parliament_id, house_id)
     response_streamer(query)
   end
 
-  def a_z_letters_members_house
+  def house_members
     parliament_id = params[:parliament_id]
     house_id = params[:house_id]
-    query = ParliamentQueryObject.members_house_a_z_letters(parliament_id, house_id)
+    query = ParliamentQueryObject.house_members(parliament_id, house_id)
     response_streamer(query)
   end
 
-  def members_house_letters
+  def a_z_letters_house_members
+    parliament_id = params[:parliament_id]
+    house_id = params[:house_id]
+    query = ParliamentQueryObject.house_members_a_z_letters(parliament_id, house_id)
+    response_streamer(query)
+  end
+
+  def house_members_letters
     parliament_id = params[:parliament_id]
     house_id = params[:house_id]
     letter = params[:letter]
-    query = ParliamentQueryObject.members_house_letters(parliament_id, house_id, letter)
+    query = ParliamentQueryObject.house_members_letters(parliament_id, house_id, letter)
     response_streamer(query)
   end
 
@@ -126,43 +133,43 @@ class ParliamentsController < ApplicationController
     response_streamer(query)
   end
 
-  def party_houses
+  def house_parties
     parliament_id = params[:parliament_id]
-    party_id = params[:party_id]
-    query = ParliamentQueryObject.party_houses(parliament_id, party_id)
+    house_id = params[:house_id]
+    query = ParliamentQueryObject.house_parties(parliament_id, house_id)
     response_streamer(query)
   end
 
-  def party_house
+  def house_party
     parliament_id = params[:parliament_id]
     party_id = params[:party_id]
     house_id = params[:house_id]
-    query = ParliamentQueryObject.party_house(parliament_id, party_id, house_id)
+    query = ParliamentQueryObject.house_party(parliament_id, party_id, house_id)
     response_streamer(query)
   end
 
-  def party_house_members
+  def house_party_members
     parliament_id = params[:parliament_id]
     party_id = params[:party_id]
     house_id = params[:house_id]
-    query = ParliamentQueryObject.party_house_members(parliament_id, party_id, house_id)
+    query = ParliamentQueryObject.house_party_members(parliament_id, party_id, house_id)
     response_streamer(query)
   end
 
-  def a_z_letters_party_house_members
+  def a_z_letters_house_party_members
     parliament_id = params[:parliament_id]
     party_id = params[:party_id]
     house_id = params[:house_id]
-    query = ParliamentQueryObject.party_house_members_a_z_letters(parliament_id, party_id, house_id)
+    query = ParliamentQueryObject.house_party_members_a_z_letters(parliament_id, party_id, house_id)
     response_streamer(query)
   end
 
-  def party_house_members_letters
+  def house_party_members_letters
     parliament_id = params[:parliament_id]
     party_id = params[:party_id]
     house_id = params[:house_id]
     letter = params[:letter]
-    query = ParliamentQueryObject.party_house_members_letters(parliament_id, party_id, house_id, letter)
+    query = ParliamentQueryObject.house_party_members_letters(parliament_id, party_id, house_id, letter)
     response_streamer(query)
   end
 

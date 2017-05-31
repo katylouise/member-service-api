@@ -183,6 +183,7 @@ CONSTRUCT {
    ?seatIncumbency
         a :SeatIncumbency ;
         :seatIncumbencyHasHouseSeat ?houseSeat ;
+        :incumbencyStartDate ?incStartDate ;
         :incumbencyEndDate ?seatIncumbencyEndDate .
     ?houseSeat
         a :HouseSeat ;
@@ -280,6 +281,7 @@ CONSTRUCT {
    ?seatIncumbency
         a :SeatIncumbency ;
         :seatIncumbencyHasHouseSeat ?houseSeat ;
+        :incumbencyStartDate ?incStartDate ;
         :incumbencyEndDate ?seatIncumbencyEndDate .
     ?houseSeat
         a :HouseSeat ;
@@ -382,7 +384,7 @@ WHERE {
 }"
   end
 
-  def self.members_houses(id)
+  def self.houses(id)
     "PREFIX : <http://id.ukpds.org/schema/>
 CONSTRUCT {
 	 ?house
@@ -416,7 +418,46 @@ WHERE {
 }"
   end
 
-  def self.members_house(parliament_id, house_id)
+  def self.house(parliament_id, house_id)
+    "PREFIX : <http://id.ukpds.org/schema/>
+CONSTRUCT {
+	 ?house
+        a :House ;
+        :houseName ?houseName .
+     ?parliament
+         a :ParliamentPeriod ;
+         :parliamentPeriodStartDate ?parliamentStartDate ;
+         :parliamentPeriodEndDate ?parliamentEndDate ;
+         :parliamentPeriodNumber ?parliamentNumber ;
+         :parliamentPeriodHasImmediatelyFollowingParliamentPeriod ?nextParliament ;
+    	 :parliamentPeriodHasImmediatelyPreviousParliamentPeriod ?previousParliament .
+}
+WHERE {
+    BIND(<#{DATA_URI_PREFIX}/#{parliament_id}> AS ?parliament)
+
+    ?parliament
+        a :ParliamentPeriod ;
+        :parliamentPeriodStartDate ?parliamentStartDate ;
+        :parliamentPeriodNumber ?parliamentNumber .
+    OPTIONAL { ?parliament :parliamentPeriodEndDate ?parliamentEndDate . }
+    OPTIONAL { ?parliament :parliamentPeriodHasImmediatelyFollowingParliamentPeriod ?nextParliament . }
+    OPTIONAL { ?parliament :parliamentPeriodHasImmediatelyPreviousParliamentPeriod ?previousParliament . }
+
+    OPTIONAL {
+        BIND(<#{DATA_URI_PREFIX}/#{house_id}> AS ?house)
+
+        ?house
+            a :House ;
+            :houseName ?houseName .
+            ?parliament :parliamentPeriodHasSeatIncumbency ?seatIncumbency .
+            ?seatIncumbency :incumbencyHasMember ?person ;
+                            :seatIncumbencyHasHouseSeat ?houseSeat .
+            ?houseSeat :houseSeatHasHouse ?house .
+    }
+}"
+  end
+
+  def self.house_members(parliament_id, house_id)
     "PREFIX : <http://id.ukpds.org/schema/>
 CONSTRUCT {
     ?person
@@ -430,6 +471,7 @@ CONSTRUCT {
    ?seatIncumbency
         a :SeatIncumbency ;
         :seatIncumbencyHasHouseSeat ?houseSeat ;
+        :incumbencyStartDate ?incStartDate ;
         :incumbencyEndDate ?seatIncumbencyEndDate .
     ?houseSeat
         a :HouseSeat ;
@@ -520,7 +562,7 @@ WHERE {
 }"
   end
 
-  def self.members_house_a_z_letters(parliament_id, house_id)
+  def self.house_members_a_z_letters(parliament_id, house_id)
     "PREFIX : <http://id.ukpds.org/schema/>
 CONSTRUCT {
     _:x :value ?firstLetter .
@@ -542,7 +584,7 @@ WHERE {
 }"
   end
 
-  def self.members_house_letters(parliament_id, house_id, letter)
+  def self.house_members_letters(parliament_id, house_id, letter)
     "PREFIX : <http://id.ukpds.org/schema/>
 CONSTRUCT {
     ?person
@@ -556,6 +598,7 @@ CONSTRUCT {
    ?seatIncumbency
         a :SeatIncumbency ;
         :seatIncumbencyHasHouseSeat ?houseSeat ;
+        :incumbencyStartDate ?incStartDate ;
         :incumbencyEndDate ?seatIncumbencyEndDate .
     ?houseSeat
         a :HouseSeat ;
@@ -762,6 +805,7 @@ CONSTRUCT {
    ?seatIncumbency
         a :SeatIncumbency ;
         :seatIncumbencyHasHouseSeat ?houseSeat ;
+        :incumbencyStartDate ?incStartDate ;
         :incumbencyEndDate ?seatIncumbencyEndDate .
     ?houseSeat
         a :HouseSeat ;
@@ -914,6 +958,7 @@ CONSTRUCT {
    ?seatIncumbency
         a :SeatIncumbency ;
         :seatIncumbencyHasHouseSeat ?houseSeat ;
+        :incumbencyStartDate ?incStartDate ;
         :incumbencyEndDate ?seatIncumbencyEndDate .
     ?houseSeat
         a :HouseSeat ;
@@ -1018,61 +1063,7 @@ SELECT DISTINCT ?firstLetter WHERE {
 }"
   end
 
-  def self.party_houses(parliament_id, party_id)
-    "PREFIX : <http://id.ukpds.org/schema/>
-CONSTRUCT {
-    ?parliament
-        a :ParliamentPeriod ;
-        :parliamentPeriodStartDate ?startDate ;
-        :parliamentPeriodEndDate ?endDate ;
-        :parliamentPeriodNumber ?parliamentNumber ;
-         :parliamentPeriodHasImmediatelyFollowingParliamentPeriod ?nextParliament ;
-    	 :parliamentPeriodHasImmediatelyPreviousParliamentPeriod ?previousParliament .
-    ?party
-        a :Party ;
-        :partyName ?partyName .
-    ?house
-        a :House ;
-        :houseName ?houseName .
-}
-WHERE {
-            BIND(<#{DATA_URI_PREFIX}/#{parliament_id}> AS ?parliament)
-            BIND(<#{DATA_URI_PREFIX}/#{party_id}> AS ?party)
-    	?party
-        	a :Party ;
-         	:partyName ?partyName .
-        ?parliament
-            a :ParliamentPeriod ;
-            :parliamentPeriodStartDate ?startDate ;
-            :parliamentPeriodNumber ?parliamentNumber .
-        OPTIONAL { ?parliament :parliamentPeriodEndDate ?endDate . }
-        OPTIONAL { ?parliament :parliamentPeriodHasImmediatelyFollowingParliamentPeriod ?nextParliament . }
-   	    OPTIONAL { ?parliament :parliamentPeriodHasImmediatelyPreviousParliamentPeriod ?previousParliament . }
-
-      OPTIONAL {
-          ?parliament :parliamentPeriodHasSeatIncumbency ?seatIncumbency .
-          ?seatIncumbency :incumbencyHasMember ?member ;
-                          :incumbencyStartDate ?incStartDate ;
-                          :seatIncumbencyHasHouseSeat ?houseSeat .
-          ?houseSeat :houseSeatHasHouse ?house .
-          ?house :houseName ?houseName .
-          OPTIONAL { ?seatIncumbency :incumbencyEndDate ?seatIncumbencyEndDate . }
-          ?member :partyMemberHasPartyMembership ?partyMembership .
-          ?partyMembership :partyMembershipHasParty ?party ;
-                   :partyMembershipStartDate ?pmStartDate .
-          OPTIONAL { ?partyMembership :partyMembershipEndDate ?partyMembershipEndDate . }
-
-          BIND(COALESCE(?partyMembershipEndDate,now()) AS ?pmEndDate)
-          BIND(COALESCE(?seatIncumbencyEndDate,now()) AS ?incEndDate)
-          FILTER (
-            (?pmStartDate <= ?incStartDate && ?pmEndDate > ?incStartDate) ||
-            (?pmStartDate >= ?incStartDate && ?pmStartDate < ?incEndDate)
-      )
-      }
-}"
-  end
-
-  def self.party_house(parliament_id, party_id, house_id)
+  def self.house_parties(parliament_id, house_id)
     "PREFIX : <http://id.ukpds.org/schema/>
 CONSTRUCT {
     ?parliament
@@ -1091,26 +1082,80 @@ CONSTRUCT {
 }
 WHERE {
         BIND(<#{DATA_URI_PREFIX}/#{parliament_id}> AS ?parliament)
-        BIND(<#{DATA_URI_PREFIX}/#{party_id}> AS ?party)
-
-    	?party
-        	a :Party ;
-         	:partyName ?partyName .
+        BIND(<#{DATA_URI_PREFIX}/#{house_id}> AS ?house)
+    	?house
+        	a :House ;
+         	:houseName ?houseName .
         ?parliament
             a :ParliamentPeriod ;
             :parliamentPeriodStartDate ?startDate ;
             :parliamentPeriodNumber ?parliamentNumber .
-
         OPTIONAL { ?parliament :parliamentPeriodEndDate ?endDate . }
         OPTIONAL { ?parliament :parliamentPeriodHasImmediatelyFollowingParliamentPeriod ?nextParliament . }
    	    OPTIONAL { ?parliament :parliamentPeriodHasImmediatelyPreviousParliamentPeriod ?previousParliament . }
 
     OPTIONAL {
+        ?parliament :parliamentPeriodHasSeatIncumbency ?seatIncumbency .
+        ?seatIncumbency :incumbencyHasMember ?member ;
+                        :incumbencyStartDate ?incStartDate ;
+                        :seatIncumbencyHasHouseSeat ?houseSeat .
+        ?houseSeat :houseSeatHasHouse ?house .
+        ?house :houseName ?houseName .
+        OPTIONAL { ?seatIncumbency :incumbencyEndDate ?seatIncumbencyEndDate . }
+        ?member :partyMemberHasPartyMembership ?partyMembership .
+        ?partyMembership :partyMembershipHasParty ?party ;
+        				 :partyMembershipStartDate ?pmStartDate .
+        ?party :partyName ?partyName .
+        OPTIONAL { ?partyMembership :partyMembershipEndDate ?partyMembershipEndDate . }
+
+        BIND(COALESCE(?partyMembershipEndDate,now()) AS ?pmEndDate)
+        BIND(COALESCE(?seatIncumbencyEndDate,now()) AS ?incEndDate)
+        FILTER (
+        	(?pmStartDate <= ?incStartDate && ?pmEndDate > ?incStartDate) ||
+        	(?pmStartDate >= ?incStartDate && ?pmStartDate < ?incEndDate)
+		)
+    }
+}"
+  end
+
+  def self.house_party(parliament_id, party_id, house_id)
+    "PREFIX : <http://id.ukpds.org/schema/>
+CONSTRUCT {
+    ?parliament
+        a :ParliamentPeriod ;
+        :parliamentPeriodStartDate ?startDate ;
+        :parliamentPeriodEndDate ?endDate ;
+        :parliamentPeriodNumber ?parliamentNumber ;
+         :parliamentPeriodHasImmediatelyFollowingParliamentPeriod ?nextParliament ;
+    	 :parliamentPeriodHasImmediatelyPreviousParliamentPeriod ?previousParliament .
+    ?party
+        a :Party ;
+        :partyName ?partyName .
+    ?house
+        a :House ;
+        :houseName ?houseName .
+}
+WHERE {
+        BIND(<#{DATA_URI_PREFIX}/#{parliament_id}> AS ?parliament)
         BIND(<#{DATA_URI_PREFIX}/#{house_id}> AS ?house)
 
-        ?house
-            a :House ;
-            :houseName ?houseName .
+    	?house
+        	a :House ;
+         	:houseName ?houseName .
+        ?parliament
+            a :ParliamentPeriod ;
+            :parliamentPeriodStartDate ?startDate ;
+            :parliamentPeriodNumber ?parliamentNumber .
+        OPTIONAL { ?parliament :parliamentPeriodEndDate ?endDate . }
+        OPTIONAL { ?parliament :parliamentPeriodHasImmediatelyFollowingParliamentPeriod ?nextParliament . }
+   	    OPTIONAL { ?parliament :parliamentPeriodHasImmediatelyPreviousParliamentPeriod ?previousParliament . }
+
+    OPTIONAL {
+        BIND(<#{DATA_URI_PREFIX}/#{party_id}> AS ?party)
+
+    	?party
+        	a :Party ;
+         	:partyName ?partyName .
         ?parliament :parliamentPeriodHasSeatIncumbency ?seatIncumbency .
         ?seatIncumbency :incumbencyHasMember ?member ;
                         :incumbencyStartDate ?incStartDate ;
@@ -1132,7 +1177,7 @@ WHERE {
 }"
   end
 
-  def self.party_house_members(parliament_id, party_id, house_id)
+  def self.house_party_members(parliament_id, party_id, house_id)
     "PREFIX : <http://id.ukpds.org/schema/>
 CONSTRUCT {
     ?person
@@ -1146,6 +1191,7 @@ CONSTRUCT {
    ?seatIncumbency
         a :SeatIncumbency ;
         :seatIncumbencyHasHouseSeat ?houseSeat ;
+        :incumbencyStartDate ?incStartDate ;
         :incumbencyEndDate ?seatIncumbencyEndDate .
     ?houseSeat
         a :HouseSeat ;
@@ -1255,7 +1301,7 @@ WHERE {
 }"
   end
 
-  def self.party_house_members_a_z_letters(parliament_id, party_id, house_id)
+  def self.house_party_members_a_z_letters(parliament_id, party_id, house_id)
     "PREFIX : <http://id.ukpds.org/schema/>
 CONSTRUCT {
 	_:x :value ?firstLetter .
@@ -1293,7 +1339,7 @@ WHERE {
 }"
   end
 
-  def self.party_house_members_letters(parliament_id, party_id, house_id, letter)
+  def self.house_party_members_letters(parliament_id, party_id, house_id, letter)
     "PREFIX : <http://id.ukpds.org/schema/>
 CONSTRUCT {
     ?person
@@ -1307,6 +1353,7 @@ CONSTRUCT {
    ?seatIncumbency
         a :SeatIncumbency ;
         :seatIncumbencyHasHouseSeat ?houseSeat ;
+        :incumbencyStartDate ?incStartDate :
         :incumbencyEndDate ?seatIncumbencyEndDate .
     ?houseSeat
         a :HouseSeat ;

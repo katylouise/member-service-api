@@ -95,19 +95,21 @@ Rails.application.routes.draw do
     get '/members', to: 'parliaments#members'
     match '/members/:letter', to: 'parliaments#members_letters', letter: /[A-Za-z]/, via: [:get]
     get '/members/a_z_letters', to: 'parliaments#a_z_letters_members'
-    get '/members/houses', to: 'parliaments#members_houses'
-    get '/members/houses/:house_id', to: 'parliaments#members_house'
-    get '/members/houses/:house_id/a_z_letters', to: 'parliaments#a_z_letters_members_house'
-    match '/members/houses/:house_id/:letter', to: 'parliaments#members_house_letters', letter: /[A-Za-z]/, via: [:get]
+    get '/houses', to: 'parliaments#houses'
+    get '/houses/:house_id', to: 'parliaments#house'
+    get '/houses/:house_id/members', to: 'parliaments#house_members'
+    get '/houses/:house_id/members/a_z_letters', to: 'parliaments#a_z_letters_house_members'
+    match 'houses/:house_id/members/:letter', to: 'parliaments#house_members_letters', letter: /[A-Za-z]/, via: [:get]
     get '/parties', to: 'parliaments#parties'
     get '/parties/:party_id', to: 'parliaments#party'
     get '/parties/:party_id/members', to: 'parliaments#party_members'
     get '/parties/:party_id/members/a_z_letters', to: 'parliaments#a_z_letters_party_members'
     match '/parties/:party_id/members/:letter', to: 'parliaments#party_members_letters', letter: /[A-Za-z]/, via: [:get]
-    get '/parties/:party_id/houses', to: 'parliaments#party_houses'
-    get '/parties/:party_id/houses/:house_id', to: 'parliaments#party_house'
-    get '/parties/:party_id/houses/:house_id/members', to: 'parliaments#party_house_members'
-    get '/parties/:party_id/houses/:house_id/members/a_z_letters', to: 'parliaments#a_z_letters_party_house_members'
+    get '/houses/:house_id/parties', to: 'parliaments#house_parties'
+    get '/houses/:house_id/parties/:party_id', to: 'parliaments#house_party'
+    get '/houses/:house_id/parties/:party_id/members', to: 'parliaments#house_party_members'
+    get '/houses/:house_id/parties/:party_id/members/a_z_letters', to: 'parliaments#a_z_letters_house_party_members'
+
     match '/parties/:party_id/houses/:house_id/members/:letter', to: 'parliaments#party_house_members_letters', letter: /[A-Za-z]/, via: [:get]
     get '/constituencies', to: 'parliaments#constituencies'
     get '/constituencies/a_z_letters', to: 'parliaments#a_z_letters_constituencies'
